@@ -16,22 +16,46 @@ class AuthorizationHandler:
         self.driver = webdriver.Chrome(service=self.service, options=setting_chrome_options())
 
     def perform_authorization(self):
+        """
+        Performs the authorization process by logging in with the credentials
+        """
+        # Retrieve login credentials
         login = Credentials().kp_login
         password = Credentials().kp_password
         first_login = Credentials().first_login
+
+        # Open the login page
         self.driver.get(first_login)
+
+        # Find the login input field and enter the login
         login_input = self.driver.find_element("id", "login")
         login_input.send_keys(login)
+
+        # Find the password input field and enter the password
         password_input = self.driver.find_element("id", "password")
         password_input.send_keys(password)
+
+        # Click the login button
         self.driver.find_element("name", "loginbtn").click()
 
     def get_driver(self):
         return self.driver
 
-    def authorize(self):
+    def authorize(self) -> webdriver.Chrome:
+        """
+        Authorizes the user by setting up the driver, performing the authorization,
+        and returning the driver.
+
+        Returns:
+            webdriver.Chrome: The authorized driver.
+        """
+        # Set up the driver
         self.setup_driver()
+
+        # Perform the authorization
         self.perform_authorization()
+
+        # Return the driver
         return self.get_driver()
 
 
