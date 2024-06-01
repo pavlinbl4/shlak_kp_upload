@@ -2,7 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from kp_selenium_tools.authorization import AuthorizationHandler
-from photo_id import extract_photo_id
+from photo_uplolader.photo_id import extract_photo_id
 
 
 def find_element(driver, selector):
@@ -20,9 +20,10 @@ def fill_field(driver, field_selector, text):
     field.send_keys(text)
 
 
-def main(path_to_file, image_caption, author):
+def web_photo_uploader(path_to_file, image_caption, author):
     driver = AuthorizationHandler().authorize()
-    driver.get('https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid=429379')
+    # new slag link id 434484
+    driver.get('https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid=434484')
 
     upload_file(driver, path_to_file, (By.XPATH, "//input[@id='InputFile']"))
     find_element(driver, (By.XPATH, "//input[@type='submit']")).click()
@@ -44,6 +45,6 @@ def main(path_to_file, image_caption, author):
 
 
 if __name__ == '__main__':
-    main('/Volumes/big4photo/Downloads/0043_weddtime.ru_7_11zon.jpg',
-         'Круглый стол «Коммерческая недвижимость. Акценты-2024»',
-         'Антон Волошин')
+    web_photo_uploader('/Users/evgeniy/Downloads/0229.jpg',
+         'Василий Селиванов',
+         'Legenda Development')
