@@ -20,7 +20,7 @@ from photo_uplolader.shlack_uploader import web_photo_uploader
 # Включаем логирование, чтобы не пропустить важные сообщения
 logging.basicConfig(level=logging.INFO)
 
-TOKEN = Credentials().pavlinbl4_bot
+TOKEN = Credentials().contraption_bot
 ALLOWED_USER_IDS = {123456789, 987654321, 1237220337, 187597961}
 
 # Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
@@ -57,7 +57,8 @@ async def process_start_command(message: Message):
     await message.answer(
         text='Этот бот помогает добавлять фото в архив\n\n'
              'Чтобы перейти к отправке фото\n'
-             'отправьте команду /add_image'
+             'отправьте команду /add_image\n'
+             'без указания автора фото бот работать не будет!!!'
     )
 
 
@@ -67,7 +68,7 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
     await message.answer(
         text='Вы прервали работу\n\n'
              'Чтобы вернуться к загрузке фото -\n '
-             'отправьте команду /add_image'
+             'отправьте команду\n/add_image'
     )
     # Сбрасываем состояние и очищаем данные, полученные внутри состояний
     await state.clear()
@@ -86,6 +87,7 @@ async def process_add_image_command(message: Message, state: FSMContext):
 # и переводить в состояние ожидания ввода автора фото
 @dp.message(StateFilter(FSMFillForm.add_file))
 async def handle_allowed_user_messages(message: types.Message, state: FSMContext):
+    logging.info(message.document)
     if message.document is None:
         await message.answer(f"Отправьте фото «как файл», чтоб сохранить качество\n"
                              f"снимка")
@@ -99,6 +101,7 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
 
         allowed_files_type = {'image/jpeg',
                               'image/png',
+                              'image/tiff'
                               }
 
         if uploaded_file.mime_type in allowed_files_type:
@@ -109,7 +112,6 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
             path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}.jpg"
             await state.update_data(path_to_uploaded_image=path_to_uploaded_image)
             await bot.download_file(file_path, path_to_uploaded_image)
-
 
             # send message to sender
             await message.answer(f"Hello, {hbold(message.from_user.full_name)}\n"
@@ -122,6 +124,8 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
 
         else:
             await message.answer(f"Вы отправили недопустимый тип файла\n"
+                                 # f"{uploaded_file.file_name}\n"
+                                 f"{uploaded_file.mime_type}\n"
                                  f"я работаю только с фотографиями")
             await state.set_state(FSMFillForm.add_file)
 
