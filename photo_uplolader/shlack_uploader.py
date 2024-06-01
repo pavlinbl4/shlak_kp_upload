@@ -1,3 +1,5 @@
+import os
+
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -41,6 +43,9 @@ def web_photo_uploader(path_to_file, image_caption, author):
     find_element(driver, wait_for_load)
 
     current_url = driver.current_url
+
+    #remove file after upload
+    os.remove(path_to_file)
     return extract_photo_id(current_url)
 
 
