@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
@@ -15,6 +16,7 @@ from kp_photo_uploader_bot.check_existing_file import create_dir
 
 from get_credentials import Credentials
 from kp_photo_uploader_bot.common.bot_commands_list import kp_uploader
+from kp_photo_uploader_bot.image_converter.convert_images_in_folder_to_jpeg import convert_images_to_jpeg
 from photo_uplolader.shlack_uploader import web_photo_uploader
 
 # Включаем логирование, чтобы не пропустить важные сообщения
@@ -101,7 +103,7 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
 
         allowed_files_type = {'image/jpeg',
                               'image/png',
-                              'image/tiff'
+                              'mage/x-tiff',
                               }
 
         if uploaded_file.mime_type in allowed_files_type:
@@ -109,7 +111,11 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
             uploaded_images = create_dir("Uploaded_images")
 
             # save file to hdd
-            path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}.jpg"
+            path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}"
+
+            if Path(path_to_uploaded_image).suffix.lower() not in ['jpeg', 'jpg']:
+                path_to_uploaded_image = convert_images_to_jpeg(path_to_uploaded_image)
+
             await state.update_data(path_to_uploaded_image=path_to_uploaded_image)
             await bot.download_file(file_path, path_to_uploaded_image)
 
