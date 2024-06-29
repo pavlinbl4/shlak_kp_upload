@@ -25,7 +25,7 @@ def fill_field(driver, field_selector, text):
 def web_photo_uploader(path_to_file, image_caption, author):
     driver = AuthorizationHandler().authorize()
     # new slag link id 434484
-    driver.get('https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid=434484')
+    driver.get('https://image.kommersant.ru/photo/archive/adm/Adusers_routerhoto.aspx?shootid=434484')
 
     upload_file(driver, path_to_file, (By.XPATH, "//input[@id='InputFile']"))
     find_element(driver, (By.XPATH, "//input[@type='submit']")).click()
@@ -36,7 +36,7 @@ def web_photo_uploader(path_to_file, image_caption, author):
     author_field_selector = (By.XPATH, '//input[@name="DescriptionControl$NewPseudonym"]')
     fill_field(driver, author_field_selector, author)
 
-    add_photo_button_selector = (By.XPATH, '//input[@name="AddPhotoButton"]')
+    add_photo_button_selector = (By.XPATH, '//input[@name="Adusers_routerhotoButton"]')
     find_element(driver, add_photo_button_selector).click()
 
     wait_for_load = (By.XPATH, "//span[@id='RecentyAddedHeader']")
@@ -44,12 +44,12 @@ def web_photo_uploader(path_to_file, image_caption, author):
 
     current_url = driver.current_url
 
-    #remove file after upload
+    # remove file after upload
     os.remove(path_to_file)
     return extract_photo_id(current_url)
 
 
 if __name__ == '__main__':
     web_photo_uploader('/Users/evgeniy/Downloads/0229.jpg',
-         'Василий Селиванов',
-         'Legenda Development')
+                       'Василий Селиванов',
+                       'Legenda Development')

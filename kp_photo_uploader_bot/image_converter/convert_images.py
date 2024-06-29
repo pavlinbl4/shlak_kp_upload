@@ -2,12 +2,11 @@ import sys
 
 from loguru import logger
 
-
 from PIL import Image
 import os
 
 # logger.add("output.log", format="{time} {level} {message}", level="INFO")
-logger.add(sys.stdout,level="INFO")
+logger.add(sys.stdout, level="INFO")
 
 
 def convert_image_to_jpeg(path_to_file: str):
