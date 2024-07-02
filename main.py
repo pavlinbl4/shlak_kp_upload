@@ -174,7 +174,7 @@ async def process_caption_sent(message: Message, state: FSMContext):
 @dp.message(Command(commands='add_image'), StateFilter(default_state))
 async def handle_other_messages(message: types.Message):
     # This function will be called for messages from any other user
-    with open('users.txt', 'a') as txt_user_base:
+    with open('kp_photo_uploader_bot/users.txt', 'a') as txt_user_base:
         txt_user_base.write(f'{message.from_user.full_name} - {message.from_user.id}\n')
     await message.answer(f"Извините, {hbold(message.from_user.full_name)}\n"
                          f"это частный бот и вы не включены в"
