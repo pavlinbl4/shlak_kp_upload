@@ -1,3 +1,7 @@
+"""
+this function upload image to archive via web uploader
+"""
+
 import os
 
 from selenium.webdriver.common.by import By
@@ -22,10 +26,10 @@ def fill_field(driver, field_selector, text):
     field.send_keys(text)
 
 
-def web_photo_uploader(path_to_file, image_caption, author):
+def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='434484'):
     driver = AuthorizationHandler().authorize()
     # new slag link id 434484
-    driver.get('https://image.kommersant.ru/photo/archive/adm/Adusers_routerhoto.aspx?shootid=434484')
+    driver.get(f'https://image.kommersant.ru/photo/archive/adm/Adusers_routerhoto.aspx?shootid={internal_shoot_id}')
 
     upload_file(driver, path_to_file, (By.XPATH, "//input[@id='InputFile']"))
     find_element(driver, (By.XPATH, "//input[@type='submit']")).click()
@@ -52,4 +56,5 @@ def web_photo_uploader(path_to_file, image_caption, author):
 if __name__ == '__main__':
     web_photo_uploader('/Users/evgeniy/Downloads/0229.jpg',
                        'Василий Селиванов',
-                       'Legenda Development')
+                       'Legenda Development',
+                       internal_shoot_id='434484')
