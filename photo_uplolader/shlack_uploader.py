@@ -10,6 +10,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from kp_selenium_tools.authorization import AuthorizationHandler
 from photo_uplolader.photo_id import extract_photo_id
 
+from loguru import logger
+
 
 def find_element(driver, selector):
     return WebDriverWait(driver, 5).until(EC.element_to_be_clickable(selector))
@@ -29,7 +31,12 @@ def fill_field(driver, field_selector, text):
 def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='434484'):
     driver = AuthorizationHandler().authorize()
     # new slag link id 434484
-    driver.get(f'https://image.kommersant.ru/photo/archive/adm/Adusers_routerhoto.aspx?shootid={internal_shoot_id}')
+    # https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid=
+    upload_link = f'https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid={internal_shoot_id}'
+    driver.get(upload_link)
+    logger.info(upload_link)
+    logger.info(driver.title)
+    logger.info(find_element(driver,(By.XPATH, '//*[@id="HeaderText"]')).text)
 
     upload_file(driver, path_to_file, (By.XPATH, "//input[@id='InputFile']"))
     find_element(driver, (By.XPATH, "//input[@type='submit']")).click()
@@ -40,7 +47,8 @@ def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='4
     author_field_selector = (By.XPATH, '//input[@name="DescriptionControl$NewPseudonym"]')
     fill_field(driver, author_field_selector, author)
 
-    add_photo_button_selector = (By.XPATH, '//input[@name="Adusers_routerhotoButton"]')
+    # find upload photo button and click it
+    add_photo_button_selector = (By.XPATH, '//input[@name="AddPhotoButton"]')
     find_element(driver, add_photo_button_selector).click()
 
     wait_for_load = (By.XPATH, "//span[@id='RecentyAddedHeader']")
@@ -54,7 +62,7 @@ def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='4
 
 
 if __name__ == '__main__':
-    web_photo_uploader('/Users/evgeniy/Downloads/0229.jpg',
-                       'Василий Селиванов',
-                       'Legenda Development',
+    web_photo_uploader('/Users/evgeniy/Downloads/IMG_9466.JPG',
+                       'Фармацевтический завод «Фарма Капитал»',
+                       'АО «Российский аукционный дом»',
                        internal_shoot_id='434484')
