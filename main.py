@@ -23,7 +23,7 @@ from photo_uplolader.shlack_uploader import web_photo_uploader
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 
-logger.add(sys.stdout, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+logger.add("photo_uploader.log", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 TOKEN = Credentials().contraption_bot
 ALLOWED_USER_IDS = {123456789, 987654321, 1237220337, 187597961}
@@ -166,8 +166,10 @@ async def process_caption_sent(message: Message, state: FSMContext):
 
     # await state.set_state(FSMFillForm.add_caption)
     await state.clear()
-    ic(f'{data["caption"]}\n{data["credit"]}')
+    # ic(f'{data["caption"]}\n{data["credit"]}')
+    logger.info(f'{data["caption"]}\n{data["credit"]}')
     photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["caption"], data["credit"])
+    logger.info(f"id снимка получено - {photo_id}")
     await message.answer(text=f'Готово!\n\n{photo_id = }')
 
 
