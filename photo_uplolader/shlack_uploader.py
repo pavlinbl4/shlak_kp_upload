@@ -55,6 +55,7 @@ def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='4
     find_element(driver, wait_for_load)
 
     current_url = driver.current_url
+    logger.info(current_url)
 
     # remove file after upload
     os.remove(path_to_file)
