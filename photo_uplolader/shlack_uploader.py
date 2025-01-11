@@ -4,13 +4,16 @@ this function upload image to archive via web uploader
 
 import os
 
+from loguru import logger
+from selenium.common import TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from kp_selenium_tools.authorization import AuthorizationHandler
 from photo_uplolader.photo_id import extract_photo_id
 
-from loguru import logger
+logger.add("../photo_uploader.log", format="{time} {level} {message}", level="INFO")
 
 
 def find_element(driver, selector):
@@ -29,14 +32,23 @@ def fill_field(driver, field_selector, text):
 
 
 def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='434484'):
-    driver = AuthorizationHandler().authorize()
-    # new slag link id 434484
-    # https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid=
-    upload_link = f'https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid={internal_shoot_id}'
-    driver.get(upload_link)
-    logger.info(upload_link)
-    logger.info(driver.title)
-    logger.info(find_element(driver,(By.XPATH, '//*[@id="HeaderText"]')).text)
+    try:
+        driver = AuthorizationHandler().authorize()
+        if driver.title == 'Фотоархив ИД "Коммерсантъ" | Поиск':
+            logger.info("Authorization successful")
+        upload_link = f'https://image.kommersant.ru/photo/archive/adm/AddPhoto.aspx?shootid={internal_shoot_id}'
+        driver.get(upload_link)
+        # logger.info(driver.title)
+        logger.info(find_element(driver, (By.XPATH, '//*[@id="HeaderText"]')).text)
+    except TimeoutException as e:
+        logger.error(f"Timeout occurred: {e}")
+    except Exception as ex:
+        logger.error(f"An error occurred: {ex}")
+
+
+
+
+
 
     upload_file(driver, path_to_file, (By.XPATH, "//input[@id='InputFile']"))
     find_element(driver, (By.XPATH, "//input[@type='submit']")).click()
@@ -59,7 +71,9 @@ def web_photo_uploader(path_to_file, image_caption, author, internal_shoot_id='4
 
     # remove file after upload
     os.remove(path_to_file)
-    return extract_photo_id(current_url)
+    photo_id = extract_photo_id(current_url)
+    logger.info(photo_id)
+    return photo_id
 
 
 if __name__ == '__main__':
