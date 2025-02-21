@@ -19,7 +19,6 @@ def find_element(driver, selector: Tuple[str, str], timeout: int = 5):
     """Wait for an element to be clickable and return it."""
     return WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(selector))
 
-
 def upload_file(driver, path_to_file: str, upload_button_selector: Tuple[str, str]):
     """Upload a file to the web form."""
     upload_button = find_element(driver, upload_button_selector)
@@ -28,19 +27,17 @@ def upload_file(driver, path_to_file: str, upload_button_selector: Tuple[str, st
     else:
         raise FileNotFoundError(f"File not found: {path_to_file}")
 
-
 def fill_field(driver, field_selector: Tuple[str, str], text: str):
     """Fill an input field with specified text."""
     field = find_element(driver, field_selector)
     field.clear()
     field.send_keys(text)
 
-
 def web_photo_uploader(
     path_to_file: str,
     image_caption: str,
     author: str,
-    internal_shoot_id: str = '405557'
+    internal_shoot_id: str = '434484'
 ) -> str:
     """Upload a photo to the web archive."""
     try:
@@ -102,7 +99,6 @@ def web_photo_uploader(
     photo_id = extract_photo_id(current_url)
     logger.info(f"Photo ID: {photo_id}")
     return photo_id
-
 
 if __name__ == '__main__':
     web_photo_uploader(
