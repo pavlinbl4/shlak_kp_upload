@@ -15,10 +15,8 @@ from get_credentials import Credentials
 from kp_photo_uploader_bot.check_existing_file import create_dir
 from kp_photo_uploader_bot.common.bot_commands_list import kp_uploader
 from kp_photo_uploader_bot.image_converter.convert_images import convert_image_to_jpeg
-from photo_uplolader.shlack_uploader import web_photo_uploader
 
 # Включаем логирование, чтобы не пропустить важные сообщения
-logger.remove()  # Удаляет все обработчики логирования
 logger.add("../photo_uploader.log", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 # TOKEN = Credentials().contraption_bot
@@ -33,6 +31,7 @@ storage = MemoryStorage()
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher(storage=storage)
 print(">>> Запуск бота...")
+
 
 def is_allowed_file_type(mime_type: str) -> bool:
     allowed_files_type = {'image/jpeg', 'image/png', 'image/x-tiff'}
@@ -68,7 +67,7 @@ async def process_start_command(message: Message):
 
 # handler_02_1 будет срабатывать на команду "/help"
 @dp.message(Command(commands='help'), StateFilter(default_state))
-async def process_start_command(message: Message):
+async def process_help_command(message: Message):
     await message.answer(
         text='Этот бот помогает добавлять фото в архив\n\n'
              'Чтобы перейти к отправке фото\n'
@@ -121,8 +120,8 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
 
         # добавляю фото в фотоархив
         data = await state.get_data()
-
-        photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
+        photo_id = 'test'
+        # photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
 
         logger.info(f"id снимка получено - {photo_id}")
         await message.answer(text=f'Готово!\n\n{photo_id = }')
@@ -166,6 +165,7 @@ async def process_name_sent(message: Message, state: FSMContext):
     await message.answer(text='Спасибо!\n\nА теперь загрузите снимки как файл')
     await state.set_state(FSMFillForm.add_file)
 
+
 # handler_06
 @dp.message(Command(commands='add_image'), StateFilter(default_state))
 async def handle_other_messages(message: types.Message):
@@ -186,6 +186,7 @@ async def process_credit_sent(message: Message, state: FSMContext):
     await message.answer(text='текст не может быть короче 3 букв')
     # Устанавливаем состояние ожидания добавления файла
     await state.set_state(FSMFillForm.add_file)
+
 
 # handler_08
 @dp.message(StateFilter(default_state))
