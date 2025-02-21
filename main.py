@@ -56,7 +56,6 @@ class FSMFillForm(StatesGroup):
 # handler_01 будет срабатывать на команду /start вне состояний
 # и предлагать отправить фото, отправив команду /add_image
 @dp.message(CommandStart(), StateFilter(default_state))
-
 async def process_start_command(message: Message):
     logger.info("handler_01 work")
     await message.answer(
@@ -64,7 +63,6 @@ async def process_start_command(message: Message):
              'Чтобы перейти к отправке фото - '
              'отправьте команду /add_image'
     )
-    logger.info("бот стартовал")
 
 
 # handler_02_1 будет срабатывать на команду "/help"
