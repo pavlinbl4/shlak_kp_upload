@@ -51,7 +51,7 @@ def convert_to_jpeg_if_needed(file_path: str) -> str:
 class FSMFillForm(StatesGroup):
     add_file = State()  # Состояние ожидания добавления файла
     add_credit = State()  # Состояние ожидания ввода image credit
-    add_caption = State()  # Состояние ожидания выбора image caption
+    # add_caption = State()  # Состояние ожидания выбора image caption
 
 
 # async def set_main_menu(bot: Bot):
@@ -96,12 +96,9 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 
 @dp.message(Command(commands='add_image'), StateFilter(default_state), F.from_user.username.in_(ALLOWED_USER_NAMES))
 async def process_add_image_command(message: Message, state: FSMContext):
-
-    # await message.answer(text='Пожалуйста, отправьте снимок боту «как файл»')
     await message.answer(text="Укажите автора/правообладателя снимка")
     logger.info("Запрос кредитов на снимок")
     # Устанавливаем состояние ожидания ввода кредита
-    # await state.set_state(FSMFillForm.add_file)
     await state.set_state(FSMFillForm.add_credit)
 
 
