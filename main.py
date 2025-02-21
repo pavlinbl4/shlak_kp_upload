@@ -1,6 +1,3 @@
-import sys
-
-from loguru import logger
 from pathlib import Path
 
 from aiogram import Bot, Dispatcher, F, types
@@ -12,16 +9,13 @@ from aiogram.fsm.state import default_state, State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Message
 from aiogram.utils.markdown import hbold
-
-
-from kp_photo_uploader_bot.check_existing_file import create_dir
+from loguru import logger
 
 from get_credentials import Credentials
+from kp_photo_uploader_bot.check_existing_file import create_dir
 from kp_photo_uploader_bot.common.bot_commands_list import kp_uploader
-
 from kp_photo_uploader_bot.image_converter.convert_images import convert_image_to_jpeg
 from photo_uplolader.shlack_uploader import web_photo_uploader
-
 
 # Включаем логирование, чтобы не пропустить важные сообщения
 
@@ -39,8 +33,19 @@ storage = MemoryStorage()
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher(storage=storage)
 
-# Регистрация хэндлеров
-# register_handlers(dp)
+def is_allowed_file_type(mime_type: str) -> bool:
+    allowed_files_type = {'image/jpeg', 'image/png', 'image/x-tiff'}
+    return mime_type in allowed_files_type
+
+
+async def save_file_to_disk(file_path: str, destination_path: str) -> None:
+    await bot.download_file(file_path, destination_path)
+
+
+def convert_to_jpeg_if_needed(file_path: str) -> str:
+    if Path(file_path).suffix.lower() not in ['.jpeg', '.jpg']:
+        return convert_image_to_jpeg(file_path)
+    return file_path
 
 
 class FSMFillForm(StatesGroup):
@@ -96,19 +101,7 @@ async def process_add_image_command(message: Message, state: FSMContext):
     # Устанавливаем состояние ожидания ввода имени
     await state.set_state(FSMFillForm.add_file)
 
-def is_allowed_file_type(mime_type: str) -> bool:
-    allowed_files_type = {'image/jpeg', 'image/png', 'image/x-tiff'}
-    return mime_type in allowed_files_type
 
-
-async def save_file_to_disk(file_path: str, destination_path: str) -> None:
-    await bot.download_file(file_path, destination_path)
-
-
-def convert_to_jpeg_if_needed(file_path: str) -> str:
-    if Path(file_path).suffix.lower() not in ['.jpeg', '.jpg']:
-        return convert_image_to_jpeg(file_path)
-    return file_path
 
 
 async def process_single_file(uploaded_file: types.Document, message: types.Message, state: FSMContext) -> None:
@@ -133,16 +126,22 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
         await message.answer(
             f"Произошла ошибка при обработке файла {uploaded_file.file_name}. Пожалуйста, попробуйте еще раз.")
 
-
+# handler_04 будет срабатывать, если отправлено фото
+# и переводить в состояние ожидания ввода автора фото
 @dp.message(StateFilter(FSMFillForm.add_file))
 async def handle_allowed_user_messages(message: types.Message, state: FSMContext):
     logger.info(message.document)
+
+    # если message.document is None - значит прислали не файл и не группу файлов
     if message.document is None:
         await message.answer(f"Отправьте фото «как файл», чтоб сохранить качество\n"
                              f"снимка")
         await state.set_state(FSMFillForm.add_file)
+
+    #
     else:
         uploaded_files = message.document if isinstance(message.document, list) else [message.document]
+        logger.info(f'{uploaded_files = }')
         for uploaded_file in uploaded_files:
             if is_allowed_file_type(uploaded_file.mime_type):
                 await process_single_file(uploaded_file, message, state)
@@ -151,61 +150,8 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
                                      f"{uploaded_file.mime_type}\n"
                                      f"я работаю только с фотографиями")
                 await state.set_state(FSMFillForm.add_file)
-# handler_04 будет срабатывать, если отправлено фото
-# и переводить в состояние ожидания ввода автора фото
-# @dp.message(StateFilter(FSMFillForm.add_file))
-# async def handle_allowed_user_messages(message: types.Message, state: FSMContext):
-#     logger.info(message.document)
-#     # Проверяем, есть ли документ в сообщении
-#     if message.document is None:
-#         # Если документа нет, просим пользователя отправить фото как файл
-#         await message.answer(f"Отправьте фото «как файл», чтоб сохранить качество\n"
-#                              f"снимка")
-#         await state.set_state(FSMFillForm.add_file)
-#     else:
-#         # Получаем информацию о файле
-#         uploaded_file = message.document
-#         file_id = uploaded_file.file_id
-#
-#         file = await bot.get_file(file_id)
-#         file_path = file.file_path
-#
-#         allowed_files_type = {'image/jpeg',
-#                               'image/png',
-#                               'image/x-tiff',
-#                               }
-#
-#         if uploaded_file.mime_type in allowed_files_type:
-#             # create dir
-#             uploaded_images = create_dir("Uploaded_images")
-#             logger.info(f"directory created\n{uploaded_images}")
-#
-#             # save file to hdd
-#             path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}"
-#             logger.info(f'uploaded image\n{path_to_uploaded_image}')
-#             await bot.download_file(file_path, path_to_uploaded_image)
-#
-#             if Path(path_to_uploaded_image).suffix.lower() not in ['.jpeg', '.jpg']:
-#                 logger.info("It in not jpeg file")
-#                 path_to_uploaded_image = convert_image_to_jpeg(path_to_uploaded_image)
-#                 logger.info(path_to_uploaded_image)
-#
-#             await state.update_data(path_to_uploaded_image=path_to_uploaded_image)
-#
-#             # send message to sender
-#             await message.answer(f"{hbold(message.from_user.full_name)}\n"
-#                                  f"вы загрузили файл\n{hbold(uploaded_file.file_name)}\n"
-#                                  f"теперь укажите автора/правообладателя снимка")
-#
-#             # Устанавливаем состояние ожидания ввода автора фото
-#             await state.set_state(FSMFillForm.add_credit)
-#
-#         else:
-#             await message.answer(f"Вы отправили недопустимый тип файла\n"
-#                                  # f"{uploaded_file.file_name}\n"
-#                                  f"{uploaded_file.mime_type}\n"
-#                                  f"я работаю только с фотографиями")
-#             await state.set_state(FSMFillForm.add_file)
+
+
 
 
 # handler будет срабатывать, если введено корректное имя
@@ -223,7 +169,7 @@ async def process_name_sent(message: Message, state: FSMContext):
 @dp.message(StateFilter(FSMFillForm.add_caption), F.text.len() > 3)
 async def process_caption_sent(message: Message, state: FSMContext):
     # сохраняем введенное имя в хранилище по ключу "caption"
-    await state.update_data(caption=f"{message.document}{message.text}")
+    await state.update_data(caption=f"{message.document} - {message.text}")
 
     data = await state.get_data()
     # await message.answer(f'{data["caption"]}')
@@ -234,8 +180,10 @@ async def process_caption_sent(message: Message, state: FSMContext):
     await state.clear()
     # ic(f'{data["caption"]}\n{data["credit"]}')
     logger.info(f'{data["caption"]}\n{data["credit"]}')
-    photo_id = "test photo id"
-    # photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["caption"], data["credit"])
+    # photo_id = "test photo id"
+    # добавляю фото в фотоархив
+    photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["caption"], data["credit"])
+
     logger.info(f"id снимка получено - {photo_id}")
     await message.answer(text=f'Готово!\n\n{photo_id = }')
 
