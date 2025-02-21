@@ -18,7 +18,7 @@ from kp_photo_uploader_bot.image_converter.convert_images import convert_image_t
 from photo_uplolader.shlack_uploader import web_photo_uploader
 
 # Включаем логирование, чтобы не пропустить важные сообщения
-
+logger.remove()  # Удаляет все обработчики логирования
 logger.add("../photo_uploader.log", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 # TOKEN = Credentials().contraption_bot
@@ -32,7 +32,7 @@ storage = MemoryStorage()
 # Создаем объекты бота и диспетчера
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher(storage=storage)
-
+print(">>> Запуск бота...")
 
 def is_allowed_file_type(mime_type: str) -> bool:
     allowed_files_type = {'image/jpeg', 'image/png', 'image/x-tiff'}
