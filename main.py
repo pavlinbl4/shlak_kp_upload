@@ -98,7 +98,7 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 async def process_add_image_command(message: Message, state: FSMContext):
 
     # await message.answer(text='Пожалуйста, отправьте снимок боту «как файл»')
-    await message.answer(text='f"Укажите автора/правообладателя снимка"')
+    await message.answer(text="Укажите автора/правообладателя снимка")
     logger.info("Запрос кредитов на снимок")
     # Устанавливаем состояние ожидания ввода кредита
     # await state.set_state(FSMFillForm.add_file)
@@ -128,7 +128,9 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
 
         # добавляю фото в фотоархив
         data = await state.get_data()
-        photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
+        photo_id = 'test_photo_id_no_real_upload'
+        # photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
+
         logger.info(f"id снимка получено - {photo_id}")
         await message.answer(text=f'Готово!\n\n{photo_id = }')
 
