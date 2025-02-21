@@ -92,14 +92,17 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 
 
 # handler_03 будет срабатывать на команду /add_image
-# и переводить бота в состояние ожидания загрузки файла
-# @dp.message(Command(commands='add_image'), StateFilter(default_state), F.from_user.id.in_(ALLOWED_USER_IDS))
+# в новой версии 3 хэндлера вначале хочу получить данные о правообладателе
+
 @dp.message(Command(commands='add_image'), StateFilter(default_state), F.from_user.username.in_(ALLOWED_USER_NAMES))
 async def process_add_image_command(message: Message, state: FSMContext):
-    await message.answer(text='Пожалуйста, отправьте снимок боту «как файл»')
-    logger.info("Запрос файла")
-    # Устанавливаем состояние ожидания ввода имени
-    await state.set_state(FSMFillForm.add_file)
+
+    # await message.answer(text='Пожалуйста, отправьте снимок боту «как файл»')
+    await message.answer(text='f"Укажите автора/правообладателя снимка"')
+    logger.info("Запрос кредитов на снимок")
+    # Устанавливаем состояние ожидания ввода кредита
+    # await state.set_state(FSMFillForm.add_file)
+    await state.set_state(FSMFillForm.add_credit)
 
 
 
@@ -111,6 +114,7 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
         file_path = file.file_path
 
         uploaded_images = create_dir("Uploaded_images")
+        logger.info(f'{uploaded_file.file_name = }')
         path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}"
         await save_file_to_disk(file_path, path_to_uploaded_image)
 
@@ -119,8 +123,15 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
 
         await message.answer(f"{hbold(message.from_user.full_name)}\n"
                              f"вы загрузили файл\n{hbold(uploaded_file.file_name)}\n"
-                             f"теперь укажите автора/правообладателя снимка")
-        await state.set_state(FSMFillForm.add_credit)
+                             )
+        await state.update_data(image_file_name=f"{uploaded_file.file_name}")
+
+        # добавляю фото в фотоархив
+        data = await state.get_data()
+        photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
+        logger.info(f"id снимка получено - {photo_id}")
+        await message.answer(text=f'Готово!\n\n{photo_id = }')
+
     except Exception as e:
         logger.error(f"Error processing file {uploaded_file.file_name}: {e}")
         await message.answer(
@@ -154,38 +165,38 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
 
 
 
-# handler будет срабатывать, если введено корректное имя
-# и переводить в состояние ожидания ввода описания
+# handler будет срабатывать, если введен корректный кредит
+# и переводить в состояние ожидания добавления снимка/снимков
 @dp.message(StateFilter(FSMFillForm.add_credit), F.text.len() > 3)
 async def process_name_sent(message: Message, state: FSMContext):
     # сохраняем введенное имя в хранилище по ключу "credit"
     await state.update_data(credit=message.text)
-    await message.answer(text='Спасибо!\n\nА теперь введите ваш описание снимка')
-    await state.set_state(FSMFillForm.add_caption)
+    await message.answer(text='Спасибо!\n\nА теперь загрузите снимки как файл')
+    # await state.set_state(FSMFillForm.add_caption)
 
 
 # handler будет срабатывать, если введено корректное имя
 # и переводить в состояние ожидания ввода описания
-@dp.message(StateFilter(FSMFillForm.add_caption), F.text.len() > 3)
-async def process_caption_sent(message: Message, state: FSMContext):
-    # сохраняем введенное имя в хранилище по ключу "caption"
-    await state.update_data(caption=f"{message.document} - {message.text}")
-
-    data = await state.get_data()
-    # await message.answer(f'{data["caption"]}')
-    await message.answer(text='Спасибо!\n\nВ ближайшее время вам поступит id снимка')
-    # Устанавливаем состояние ожидания ввода описания
-
-    # await state.set_state(FSMFillForm.add_caption)
-    await state.clear()
-    # ic(f'{data["caption"]}\n{data["credit"]}')
-    logger.info(f'{data["caption"]}\n{data["credit"]}')
-    # photo_id = "test photo id"
-    # добавляю фото в фотоархив
-    photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["caption"], data["credit"])
-
-    logger.info(f"id снимка получено - {photo_id}")
-    await message.answer(text=f'Готово!\n\n{photo_id = }')
+# @dp.message(StateFilter(FSMFillForm.add_caption), F.text.len() > 3)
+# async def process_caption_sent(message: Message, state: FSMContext):
+#     # сохраняем введенное имя в хранилище по ключу "caption"
+#     await state.update_data(caption=f"{message.document} - {message.text}")
+#
+#     data = await state.get_data()
+#     # await message.answer(f'{data["caption"]}')
+#     await message.answer(text='Спасибо!\n\nВ ближайшее время вам поступит id снимка')
+#     # Устанавливаем состояние ожидания ввода описания
+#
+#     # await state.set_state(FSMFillForm.add_caption)
+#     await state.clear()
+#     # ic(f'{data["caption"]}\n{data["credit"]}')
+#     logger.info(f'{data["caption"]}\n{data["credit"]}')
+#     # photo_id = "test photo id"
+#     # добавляю фото в фотоархив
+#     photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["caption"], data["credit"])
+#
+#     logger.info(f"id снимка получено - {photo_id}")
+#     await message.answer(text=f'Готово!\n\n{photo_id = }')
 
 
 @dp.message(Command(commands='add_image'), StateFilter(default_state))
@@ -198,15 +209,15 @@ async def handle_other_messages(message: types.Message):
                          f"список пользователей .")
 
 
-# handler будет срабатывать, если введено корректное имя
-# и переводить в состояние ожидания ввода описания
+# handler будет срабатывать, если введено корректное автора/правообладателя
+# и переводить в состояние ожидания добавления файла
 @dp.message(StateFilter(FSMFillForm.add_credit), F.text.len() < 3)
 async def process_credit_sent(message: Message, state: FSMContext):
     # сохраняем введенное имя в хранилище по ключу "credit"
     await state.update_data(credit=message.text)
     await message.answer(text='текст не может быть короче 3 букв')
-    # Устанавливаем состояние ожидания ввода возраста
-    await state.set_state(FSMFillForm.add_credit)
+    # Устанавливаем состояние ожидания добавления файла
+    await state.set_state(FSMFillForm.add_file)
 
 
 @dp.message(StateFilter(default_state))
