@@ -17,7 +17,7 @@ from kp_photo_uploader_bot.common.bot_commands_list import kp_uploader
 from kp_photo_uploader_bot.image_converter.convert_images import convert_image_to_jpeg
 
 # Включаем логирование, чтобы не пропустить важные сообщения
-logger.add("../photo_uploader.log", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
+# logger.add("../photo_uploader.log", level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}")
 
 # TOKEN = Credentials().contraption_bot
 TOKEN = Credentials().crazypythonbot
@@ -56,7 +56,9 @@ class FSMFillForm(StatesGroup):
 # handler_01 будет срабатывать на команду /start вне состояний
 # и предлагать отправить фото, отправив команду /add_image
 @dp.message(CommandStart(), StateFilter(default_state))
+
 async def process_start_command(message: Message):
+    logger.info("handler_01 work")
     await message.answer(
         text='Этот бот помогает добавлять фото в архив\n\n'
              'Чтобы перейти к отправке фото - '
@@ -67,7 +69,9 @@ async def process_start_command(message: Message):
 
 # handler_02_1 будет срабатывать на команду "/help"
 @dp.message(Command(commands='help'), StateFilter(default_state))
+
 async def process_help_command(message: Message):
+    logger.info("handler_02_1 work")
     await message.answer(
         text='Этот бот помогает добавлять фото в архив\n\n'
              'Чтобы перейти к отправке фото\n'
@@ -78,7 +82,9 @@ async def process_help_command(message: Message):
 
 # handler_02_2 будет срабатывать на команду "/cancel" в любых состояниях,
 @dp.message(Command(commands='cancel'))
+
 async def process_cancel_command_state(message: Message, state: FSMContext):
+    logger.info("handler_02_2 work")
     await message.answer(
         text='Вы прервали работу\n\n'
              'Чтобы вернуться к загрузке фото\n '
@@ -92,7 +98,9 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 # в новой версии вначале хочу получить данные о правообладателе
 
 @dp.message(Command(commands='add_image'), StateFilter(default_state), F.from_user.username.in_(ALLOWED_USER_NAMES))
+
 async def process_add_image_command(message: Message, state: FSMContext):
+    logger.info("handler_03 work")
     await message.answer(text="Укажите автора/правообладателя снимка")
     logger.info("Запрос кредитов на снимок")
     # Устанавливаем состояние ожидания ввода кредита
@@ -106,6 +114,7 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
         file_path = file.file_path
 
         uploaded_images = create_dir("Uploaded_images")
+
         logger.info(f'{uploaded_file.file_name = }')
         path_to_uploaded_image = f"{uploaded_images}/{uploaded_file.file_name}"
         await save_file_to_disk(file_path, path_to_uploaded_image)
@@ -136,6 +145,7 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
 # и переводить в состояние ожидания ввода автора фото
 @dp.message(StateFilter(FSMFillForm.add_file))
 async def handle_allowed_user_messages(message: types.Message, state: FSMContext):
+    logger.info("handler_04 work")
     logger.info(message.document)
     # если message.document is None - значит прислали не файл и не медиа группу
     if message.document is None:
@@ -160,6 +170,7 @@ async def handle_allowed_user_messages(message: types.Message, state: FSMContext
 # и переводить в состояние ожидания добавления снимка/снимков
 @dp.message(StateFilter(FSMFillForm.add_credit), F.text.len() > 3)
 async def process_name_sent(message: Message, state: FSMContext):
+    logger.info("handler_05 work")
     # сохраняем введенное имя в хранилище по ключу "credit"
     await state.update_data(credit=message.text)
     await message.answer(text='Спасибо!\n\nА теперь загрузите снимки как файл')
@@ -169,6 +180,7 @@ async def process_name_sent(message: Message, state: FSMContext):
 # handler_06
 @dp.message(Command(commands='add_image'), StateFilter(default_state))
 async def handle_other_messages(message: types.Message):
+    logger.info("handler_06 work")
     # This function will be called for messages from any other user
     with open('kp_photo_uploader_bot/users.txt', 'a') as txt_user_base:
         txt_user_base.write(f'{message.from_user.full_name} - {message.from_user.id}\n')
@@ -181,6 +193,7 @@ async def handle_other_messages(message: types.Message):
 # и переводить в состояние ожидания добавления файла
 @dp.message(StateFilter(FSMFillForm.add_credit), F.text.len() < 3)
 async def process_credit_sent(message: Message, state: FSMContext):
+    logger.info("handler_07 work")
     # сохраняем введенное имя в хранилище по ключу "credit"
     await state.update_data(credit=message.text)
     await message.answer(text='текст не может быть короче 3 букв')
@@ -191,6 +204,7 @@ async def process_credit_sent(message: Message, state: FSMContext):
 # handler_08
 @dp.message(StateFilter(default_state))
 async def handle_other_messages_2(message: types.Message):
+    logger.info("handler_08 work")
     # This function will be called for messages from any other user
     await message.answer(f"{hbold(message.from_user.full_name)}\n"
                          f"для начала работы\n"
