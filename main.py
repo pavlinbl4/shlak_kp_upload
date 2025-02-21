@@ -67,6 +67,7 @@ async def process_start_command(message: Message):
              'Чтобы перейти к отправке фото - '
              'отправьте команду /add_image'
     )
+    logger.info("бот стартовал")
 
 
 @dp.message(Command(commands='help'), StateFilter(default_state))
@@ -171,7 +172,7 @@ async def process_name_sent(message: Message, state: FSMContext):
     # сохраняем введенное имя в хранилище по ключу "credit"
     await state.update_data(credit=message.text)
     await message.answer(text='Спасибо!\n\nА теперь загрузите снимки как файл')
-    # await state.set_state(FSMFillForm.add_caption)
+    await state.set_state(FSMFillForm.add_file)
 
 
 # handler будет срабатывать, если введено корректное имя
