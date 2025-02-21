@@ -127,7 +127,7 @@ async def process_single_file(uploaded_file: types.Document, message: types.Mess
         # добавляю фото в фотоархив
         data = await state.get_data()
         photo_id = 'test_photo_id_no_real_upload'
-        # photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
+        photo_id = web_photo_uploader(data["path_to_uploaded_image"], data["image_file_name"], data["credit"])
 
         logger.info(f"id снимка получено - {photo_id}")
         await message.answer(text=f'Готово!\n\n{photo_id = }')
