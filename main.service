@@ -1,0 +1,15 @@
+   [Unit]
+   Description=Сreate KP shoot bot
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=ev
+   WorkingDirectory=/home/ev/Create_shoot_in_kp
+   ExecStart=/home/ev/Create_shoot_in_kp/venv/bin/python3 /home/ev/Create_shoot_in_kp/main.py
+   Restart=always
+   RestartSec=3
+
+   [Install]
+   WantedBy=multi-user.target
+   

@@ -1,0 +1,15 @@
+   [Unit]
+   Description=upload photo via bot
+   After=network.target
+
+   [Service]
+   Type=simple
+   User=ev
+   WorkingDirectory=/home/ev/shlak_kp_upload
+   ExecStart=/home/ev/shlak_kp_upload/venv/bin/python3 /home/ev/shlak_kp_upload/main.py
+   Restart=always
+   RestartSec=3
+
+   [Install]
+   WantedBy=multi-user.target
+   

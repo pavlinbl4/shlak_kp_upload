@@ -26,6 +26,8 @@ class AuthorizationHandler:
         password_input.send_keys(password)
         self.driver.find_element("name", "loginbtn").click()
 
+
+
     def get_driver(self):
         return self.driver
 

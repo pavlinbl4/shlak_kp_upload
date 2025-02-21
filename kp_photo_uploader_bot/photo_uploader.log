@@ -1,0 +1,12 @@
+2024-07-03T22:55:21.559412+0300 INFO Запрос файла
+2024-07-03 22:55:21 | INFO | Запрос файла
+2024-07-03T22:55:44.475343+0300 INFO file_id='BQACAgIAAxkBAAICO2aFrMCsuAlLjPqRDuJAUgABG1z9HQACBlcAAsz8MEhDvhRueSIkKjUE' file_unique_id='AgADBlcAAsz8MEg' thumbnail=PhotoSize(file_id='AAMCAgADGQEAAgI7ZoWswKy4CUuM-pEO4kBSAAEbXP0dAAIGVwACzPwwSEO-FG55IiQqAQAHbQADNQQ', file_unique_id='AQADBlcAAsz8MEhy', width=320, height=213, file_size=20999) file_name='IMG_9463.JPG' mime_type='image/jpeg' file_size=99928 thumb={'file_id': 'AAMCAgADGQEAAgI7ZoWswKy4CUuM-pEO4kBSAAEbXP0dAAIGVwACzPwwSEO-FG55IiQqAQAHbQADNQQ', 'file_unique_id': 'AQADBlcAAsz8MEhy', 'file_size': 20999, 'width': 320, 'height': 213}
+2024-07-03 22:55:44 | INFO | file_id='BQACAgIAAxkBAAICO2aFrMCsuAlLjPqRDuJAUgABG1z9HQACBlcAAsz8MEhDvhRueSIkKjUE' file_unique_id='AgADBlcAAsz8MEg' thumbnail=PhotoSize(file_id='AAMCAgADGQEAAgI7ZoWswKy4CUuM-pEO4kBSAAEbXP0dAAIGVwACzPwwSEO-FG55IiQqAQAHbQADNQQ', file_unique_id='AQADBlcAAsz8MEhy', width=320, height=213, file_size=20999) file_name='IMG_9463.JPG' mime_type='image/jpeg' file_size=99928 thumb={'file_id': 'AAMCAgADGQEAAgI7ZoWswKy4CUuM-pEO4kBSAAEbXP0dAAIGVwACzPwwSEO-FG55IiQqAQAHbQADNQQ', 'file_unique_id': 'AQADBlcAAsz8MEhy', 'file_size': 20999, 'width': 320, 'height': 213}
+2024-07-03T22:55:44.709466+0300 INFO directory created
+/Users/evgeniy/PycharmProjects/shlak_kp_upload/kp_photo_uploader_bot/Uploaded_images
+2024-07-03 22:55:44 | INFO | directory created
+/Users/evgeniy/PycharmProjects/shlak_kp_upload/kp_photo_uploader_bot/Uploaded_images
+2024-07-03T22:55:44.709675+0300 INFO uploaded image
+/Users/evgeniy/PycharmProjects/shlak_kp_upload/kp_photo_uploader_bot/Uploaded_images/IMG_9463.JPG
+2024-07-03 22:55:44 | INFO | uploaded image
+/Users/evgeniy/PycharmProjects/shlak_kp_upload/kp_photo_uploader_bot/Uploaded_images/IMG_9463.JPG
