@@ -2,6 +2,9 @@
 Начну создавать бота заново
 """
 
+import asyncio
+from collections import defaultdict
+
 from aiogram import Bot, Dispatcher, F, types
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -15,7 +18,7 @@ from get_credentials import Credentials
 from kp_photo_uploader_bot.common.bot_commands_list import kp_uploader
 from loguru import logger
 
-TOKEN = Credentials().crazypythonbot
+TOKEN = Credentials().pavlinbl4_bot
 ALLOWED_USER_NAMES = {"PavlenkoEV", "anna44max"}
 
 # Инициализируем хранилище (создаем экземпляр класса MemoryStorage)
@@ -25,6 +28,13 @@ storage = MemoryStorage()
 bot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher(storage=storage)
 logger.info("Bot started to work")
+
+"""Функция проверки допустимых типов отправленных файлов"""
+
+
+def is_allowed_file_type(mime_type: str) -> bool:
+    allowed_files_type = {'image/jpeg', 'image/png', 'image/x-tiff'}
+    return mime_type in allowed_files_type
 
 
 class FSMFillForm(StatesGroup):
@@ -75,6 +85,8 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
 
 
 """handler_04 будет срабатывать на команду /add_image вне состояний"""
+
+
 @dp.message(Command(commands='add_image'), StateFilter(default_state), F.from_user.username.in_(ALLOWED_USER_NAMES))
 async def process_add_image_command(message: Message, state: FSMContext):
     await message.answer(text='Сначала нужно указать автора/правообладателя снимка')
@@ -83,9 +95,10 @@ async def process_add_image_command(message: Message, state: FSMContext):
     logger.info("Send command «add_image» handler_03")
 
 
-
 """handler_05 будет срабатывать, если введено корректное имя (больше 3 букв)
 и переходит в состояние ожидания файла"""
+
+
 @dp.message(StateFilter(FSMFillForm.add_credit), F.text.len() > 3)
 async def process_name_sent(message: Message, state: FSMContext):
     # сохраняем введенное имя в хранилище по ключу "credit"
@@ -96,9 +109,79 @@ async def process_name_sent(message: Message, state: FSMContext):
     logger.info(f"Received credit - {data['credit']} from user in handler_05")
 
     await message.answer(text=f"Credit : {data['credit']}\nОтправьте фото «как файл»,\nчтоб сохранить качество"
-                             f"снимка")
+                              f"снимка")
     await state.set_state(FSMFillForm.add_file)
     logger.info("Wait file from user handler_05")
+
+
+"""handler_06 будет срабатывать, если отправлен файл.
+Проверяет, что снимок отправлен «как фото»
+и переходит в состояние ожидания файла"""
+
+
+@dp.message(StateFilter(FSMFillForm.add_file))
+async def handle_allowed_user_messages(message: types.Message, state: FSMContext):
+    logger.info("Handler_06")
+    try:
+        logger.info(f'{message.document.mime_type = }')
+        logger.info(f'{message.photo = }')
+        logger.info(f'{message.media_group_id = }')
+    except AttributeError as ex:
+        logger.info(f'{ex = }')
+        logger.info(f'{message.photo = }')
+
+
+    # если message.document is None - значит прислали не файл и не группу файлов
+
+    if message.document is None and message.media_group_id is None:
+        logger.info("No media_group and No document")
+        await message.answer(f"Отправьте фото «как файл», чтоб сохранить качество\n"
+                             f"снимка")
+        await state.set_state(FSMFillForm.add_file)
+
+    # прислана группа фотографий как альбом
+    elif message.media_group_id and message.photo:
+        logger.info("Photos in album")
+        await message.answer(f"Отправьте фото «как файл», чтоб сохранить качество\n"
+                             f"снимка")
+        await state.set_state(FSMFillForm.add_file)
+
+    # Проверяем, является ли сообщение частью медиа группы и в ней присланы файлы
+    elif message.media_group_id and message.photo is None:
+        # Временное хранилище для медиа группа
+        media_groups = defaultdict(list)
+        logger.info("Send media_group")
+
+        async def process_group_after_timeout(media_group_id: str):
+            """Ожидает 2 секунды и обрабатывает группу."""
+            await asyncio.sleep(2)  # Ждем 2 секунды
+
+        # Добавляем сообщение в группу
+        media_groups[message.media_group_id].append(message)
+        # Запускаем таймер для обработки группы
+        asyncio.create_task(process_group_after_timeout(message.media_group_id))
+
+        # Проверяем, есть ли еще сообщения в группе
+        if message.media_group_id in media_groups:
+            group_messages = media_groups[message.media_group_id]
+            logger.info("Process media-group")
+            await message.answer(f"You send  file {message.document.file_name}")
+            # await process_media_group(group_messages)  # Обрабатываем группу
+            del media_groups[message.media_group_id]  # Удаляем группу из хранилища
+
+        # Ждем 1 секунду, чтобы собрать все сообщения группы
+        await asyncio.sleep(1)
+
+
+
+    # проверяем что прислан файл
+    elif message.document:
+        # нужно проверить, что файл соответствующего типа  !!!
+        logger.info("Single file")
+        await message.answer(f"You send single file {message.document.file_name}")
+        # check_file()
+        # Обрабатываем одиночный файл
+        # await process_single_file(message)
 
 
 # start polling
